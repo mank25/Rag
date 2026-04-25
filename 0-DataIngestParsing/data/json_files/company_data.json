@@ -1,0 +1,94 @@
+{
+  "companies": [
+    {
+      "name": "ABC Tech",
+      "location": "New Delhi",
+      "departments": [
+        {
+          "id": 1,
+          "name": "Engineering"
+        },
+        {
+          "id": 2,
+          "name": "Design"
+        }
+      ],
+      "employees": [
+        {
+          "id": 1,
+          "name": "Rahul",
+          "position": "Developer",
+          "salary": 50000,
+          "departmentId": 1
+        },
+        {
+          "id": 2,
+          "name": "Priya",
+          "position": "Designer",
+          "salary": 40000,
+          "departmentId": 2
+        }
+      ]
+    },
+    {
+      "name": "NextGen Solutions",
+      "location": "Mumbai",
+      "departments": [
+        {
+          "id": 3,
+          "name": "Management"
+        },
+        {
+          "id": 4,
+          "name": "HR"
+        }
+      ],
+      "employees": [
+        {
+          "id": 3,
+          "name": "Amit",
+          "position": "Manager",
+          "salary": 70000,
+          "departmentId": 3
+        },
+        {
+          "id": 4,
+          "name": "Sneha",
+          "position": "HR Executive",
+          "salary": 45000,
+          "departmentId": 4
+        }
+      ]
+    },
+    {
+      "name": "CodeWorks",
+      "location": "Bangalore",
+      "departments": [
+        {
+          "id": 5,
+          "name": "Backend"
+        },
+        {
+          "id": 6,
+          "name": "Frontend"
+        }
+      ],
+      "employees": [
+        {
+          "id": 5,
+          "name": "Arjun",
+          "position": "Backend Developer",
+          "salary": 60000,
+          "departmentId": 5
+        },
+        {
+          "id": 6,
+          "name": "Neha",
+          "position": "Frontend Developer",
+          "salary": 55000,
+          "departmentId": 6
+        }
+      ]
+    }
+  ]
+}

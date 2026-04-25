@@ -1,0 +1,17 @@
+langchain
+langchain-groq #use groq 
+faiss-cpu #use faiss for vector store
+tiktoken
+langchain-community
+langchain-openai
+chromadb
+sentence-transformers #use sentence-transformers for embedding ie text to vectors
+pypdf
+python-dotenv
+PyMuPDF
+python-docx
+docx2txt
+unstructured[docx]
+pandas
+openpyxl
+jq

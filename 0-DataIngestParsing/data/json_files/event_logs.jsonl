@@ -1,0 +1,3 @@
+{"timestamp": "2026-04-23T10:15:30Z", "event": "login", "user_id": 101, "page": "/home"}
+{"timestamp": "2026-04-23T10:20:45Z", "event": "view_page", "user_id": 102, "amount": 99.99}
+{"timestamp": "2026-04-23T10:25:10Z", "event": "logout", "user_id": 101}
