@@ -12,3 +12,6 @@ wheels/
 #environments varible 
 .env
 .env.*
+
+# ChromaDB
+_new_chroma_db/
