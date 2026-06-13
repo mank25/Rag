@@ -16,3 +16,4 @@ wheels/
 # ChromaDB
 _new_chroma_db/
 *_chroma_db/
+*2-Vector Stores/faiss_index
