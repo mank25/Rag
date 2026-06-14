@@ -20,3 +20,5 @@ matplotlib
 ## embeddings
 langchain-huggingface
 sentence-transformers
+langchain-experimental
+rank_bm25
