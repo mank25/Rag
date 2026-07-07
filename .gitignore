@@ -13,7 +13,11 @@ wheels/
 .env
 .env.*
 
-# ChromaDB
+# ChromaDB / vector store outputs
 _new_chroma_db/
 *_chroma_db/
 *2-Vector Stores/faiss_index
+**/output/
+chroma.sqlite3
+*.sqlite3
+*.db/
