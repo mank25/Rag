@@ -23,3 +23,4 @@ sentence-transformers
 langchain-experimental
 rank_bm25
 wikipedia
+transformers
