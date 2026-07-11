@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>About · Document Chat</title>
+<style>
+  :root { --bg:#0f1117; --panel:#1a1d27; --accent:#6c8cff; --text:#e6e8ef; --muted:#8b90a3; --card:#232735; --border:#262a38; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  header { padding:14px 20px; background:var(--panel); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; }
+  header h1 { font-size:16px; margin:0; font-weight:600; }
+  header a { color:var(--accent); text-decoration:none; font-size:13px; margin-left:14px; }
+  main { max-width:820px; margin:0 auto; padding:32px 24px 64px; line-height:1.65; }
+  h2 { margin:40px 0 12px; font-size:22px; }
+  h3 { margin:24px 0 8px; font-size:16px; color:var(--accent); }
+  p { margin:10px 0; color:var(--text); }
+  .lead { font-size:17px; color:var(--muted); }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin:14px 0; }
+  .card h3 { margin-top:0; }
+  .tag { display:inline-block; font-size:11px; background:#2a3350; color:var(--accent); border-radius:6px; padding:2px 8px; margin-left:8px; vertical-align:middle; }
+  .pipeline { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:18px 0; font-size:14px; }
+  .step { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:8px 14px; }
+  .arrow { color:var(--muted); }
+  code { background:#12141c; border:1px solid var(--border); border-radius:6px; padding:1px 6px; font-size:13px; }
+  ul { margin:8px 0; padding-left:22px; }
+  li { margin:6px 0; }
+  .muted { color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📖 About this RAG App</h1>
+  <nav>
+    <a href="/">Chat</a>
+    <a href="/admin">Admin</a>
+  </nav>
+</header>
+<main>
+
+  <p class="lead">This app is a Retrieval-Augmented Generation (RAG) system. It doesn't just extract text — every question runs through a multi-stage pipeline of query enhancement, hybrid retrieval, and reranking before the LLM ever writes a word.</p>
+
+  <h2>What is RAG?</h2>
+  <p>Large language models are great at reasoning and writing, but they only know what was in their training data — nothing about <em>your</em> documents, and they can hallucinate when asked about things they don't know.</p>
+  <p><strong>Retrieval-Augmented Generation</strong> fixes this by splitting the problem in two:</p>
+  <ul>
+    <li><strong>Retrieval</strong> — find the passages from your documents most relevant to the question.</li>
+    <li><strong>Generation</strong> — hand those passages to the LLM as context and instruct it to answer <em>strictly</em> from them, citing its sources.</li>
+  </ul>
+  <p>The result: answers grounded in your own documents, with citations, and a clear "I don't know" when the documents don't cover it.</p>
+
+  <h2>The two pipelines</h2>
+
+  <div class="card">
+    <h3>1 · Ingestion pipeline (when an admin uploads a document)</h3>
+    <div class="pipeline">
+      <span class="step">Load &amp; parse</span><span class="arrow">→</span>
+      <span class="step">Semantic chunking</span><span class="arrow">→</span>
+      <span class="step">Embed</span><span class="arrow">→</span>
+      <span class="step">Index (FAISS + BM25)</span>
+    </div>
+    <ul>
+      <li><strong>Load &amp; parse</strong> — PDF (PyMuPDF), DOCX (docx2txt), TXT/MD loaders turn files into raw text with metadata.</li>
+      <li><strong>Semantic chunking</strong> — instead of cutting text every N characters, an embedding model measures how similar adjacent sentences are and splits where the <em>topic shifts</em>. Chunks stay coherent, so retrieval returns complete thoughts, not fragments. Oversized chunks are re-split recursively as a safety net.</li>
+      <li><strong>Embedding</strong> — each chunk is converted to a 384-dimension vector with <code>all-MiniLM-L6-v2</code>, running locally at zero API cost. Similar meanings land close together in vector space.</li>
+      <li><strong>Dual indexing</strong> — vectors go into a <strong>FAISS</strong> index (persisted to disk) for semantic search, and the same chunks feed a <strong>BM25</strong> keyword index for exact-term search.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>2 · Query pipeline (when anyone asks a question)</h3>
+    <div class="pipeline">
+      <span class="step">Query enhancement</span><span class="arrow">→</span>
+      <span class="step">Hybrid retrieval</span><span class="arrow">→</span>
+      <span class="step">Rank fusion</span><span class="arrow">→</span>
+      <span class="step">Reranking</span><span class="arrow">→</span>
+      <span class="step">Grounded generation</span>
+    </div>
+    <p>Each stage below is a technique in its own right.</p>
+  </div>
+
+  <h2>Techniques used</h2>
+
+  <div class="card">
+    <h3>Query expansion <span class="tag">query enhancement</span></h3>
+    <p>Users rarely phrase questions the way documents phrase answers. Before searching, the LLM rewrites your question with synonyms and related terms — "How do I add memory?" also searches for "conversation history", "state persistence", and so on. Both the original and expanded queries are retrieved against, so nothing is lost if the rewrite misses.</p>
+  </div>
+
+  <div class="card">
+    <h3>HyDE — Hypothetical Document Embeddings <span class="tag">query enhancement</span></h3>
+    <p>A question and its answer often look nothing alike in vector space. HyDE bridges that gap: the LLM writes a short <em>hypothetical answer</em> to your question, and that imagined answer — which resembles real document passages far more than the question does — is embedded and used to search the vector store.</p>
+  </div>
+
+  <div class="card">
+    <h3>Hybrid search: dense + sparse <span class="tag">retrieval</span></h3>
+    <p>Two retrievers with complementary strengths run in parallel:</p>
+    <ul>
+      <li><strong>Dense (FAISS)</strong> — vector similarity finds passages that <em>mean</em> the same thing even with completely different wording.</li>
+      <li><strong>Sparse (BM25)</strong> — classic keyword scoring nails exact terms, names, acronyms, and error codes that embeddings can blur.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>MMR — Maximal Marginal Relevance <span class="tag">retrieval</span></h3>
+    <p>Plain similarity search can return five near-duplicate chunks from the same paragraph. The dense retriever instead uses MMR, which balances relevance against novelty: each result must be relevant to the query <em>and</em> different from the results already picked, so the context window covers more ground.</p>
+  </div>
+
+  <div class="card">
+    <h3>Reciprocal Rank Fusion <span class="tag">fusion</span></h3>
+    <p>Dense scores and BM25 scores live on incompatible scales, so they can't simply be added. RRF merges the ranked lists using only <em>positions</em>: each document earns <code>weight / (60 + rank)</code> from every list it appears in. Documents that multiple retrievers — and multiple query variants — agree on rise to the top.</p>
+  </div>
+
+  <div class="card">
+    <h3>Cross-encoder reranking <span class="tag">reranking</span></h3>
+    <p>Retrieval embeds the query and documents <em>separately</em>, which is fast but approximate. The fused candidates get a second, more careful pass: a cross-encoder (<code>ms-marco-MiniLM-L-6-v2</code>) reads the question and each chunk <em>together</em> and scores true relevance. Only the top few reranked chunks make it into the LLM's context.</p>
+  </div>
+
+  <div class="card">
+    <h3>Grounded generation with citations <span class="tag">generation</span></h3>
+    <p>The winning chunks — each labelled with its source document — are packed into the prompt, and the LLM (Groq-hosted <code>llama-3.3-70b-versatile</code>) is instructed to answer strictly from that context. Every answer reports which documents it drew from.</p>
+  </div>
+
+  <h2>Why all this instead of simple text search?</h2>
+  <p>Any single technique has a failure mode: pure vector search misses exact keywords, pure keyword search misses paraphrases, naive chunking splits ideas mid-sentence, and questions often don't resemble their answers. Layering these techniques means each one covers the others' blind spots — the LLM sees fewer, better chunks, and the answers are more accurate and better grounded.</p>
+
+  <p class="muted">Embeddings and reranking run locally (sentence-transformers); only query enhancement and the final answer use the LLM. The FAISS index persists to disk, so ingested documents survive restarts.</p>
+
+</main>
+</body>
+</html>

@@ -106,4 +106,9 @@ def admin_page() -> FileResponse:
     return FileResponse(config.FRONTEND_DIR / "admin.html")
 
 
+@app.get("/about")
+def about_page() -> FileResponse:
+    return FileResponse(config.FRONTEND_DIR / "about.html")
+
+
 app.mount("/static", StaticFiles(directory=config.FRONTEND_DIR), name="static")

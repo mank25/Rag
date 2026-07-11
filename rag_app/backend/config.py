@@ -35,3 +35,18 @@ EMBED_MODEL = os.getenv("RAG_EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-
 CHUNK_SIZE = int(os.getenv("RAG_CHUNK_SIZE", "1000"))
 CHUNK_OVERLAP = int(os.getenv("RAG_CHUNK_OVERLAP", "150"))
 TOP_K = int(os.getenv("RAG_TOP_K", "4"))
+
+# Chunking strategy: "semantic" (embedding-based breakpoints) or "recursive".
+CHUNKING = os.getenv("RAG_CHUNKING", "semantic")
+
+# Candidates fetched per retriever (dense and sparse) before fusion/reranking.
+FETCH_K = int(os.getenv("RAG_FETCH_K", "12"))
+
+# Weight of the dense retriever in hybrid fusion (sparse gets 1 - this).
+DENSE_WEIGHT = float(os.getenv("RAG_DENSE_WEIGHT", "0.5"))
+
+# Cross-encoder used to rerank fused candidates.
+RERANK_MODEL = os.getenv("RAG_RERANK_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
+
+# LLM query enhancement (expansion + HyDE). Set RAG_QUERY_ENHANCEMENT=0 to disable.
+QUERY_ENHANCEMENT = os.getenv("RAG_QUERY_ENHANCEMENT", "1").lower() not in ("0", "false")
