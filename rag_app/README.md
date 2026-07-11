@@ -2,7 +2,7 @@
 
 A Retrieval-Augmented Generation application that applies the techniques from this repo's notebooks end to end:
 
-- **Admin panel** (`/admin`) — password-protected document ingestion (PDF, DOCX, TXT, MD).
+- **Admin panel** (`/admin`) — password-protected document ingestion (PDF, DOCX, TXT, MD, CSV).
 - **Public chat** (`/`) — anyone can ask questions about the ingested documents.
 - **About page** (`/about`) — explains RAG and every technique in the pipeline.
 

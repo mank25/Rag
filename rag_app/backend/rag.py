@@ -17,6 +17,7 @@ from typing import Any
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import (
+    CSVLoader,
     Docx2txtLoader,
     PyMuPDFLoader,
     TextLoader,
@@ -91,6 +92,9 @@ class RAGEngine:
             loader = Docx2txtLoader(str(path))
         elif suffix in (".txt", ".md"):
             loader = TextLoader(str(path), encoding="utf-8")
+        elif suffix == ".csv":
+            # One Document per row, with column names embedded in the text.
+            loader = CSVLoader(str(path), encoding="utf-8")
         else:
             raise ValueError(f"Unsupported file type: {suffix}")
         return loader.load()

@@ -17,7 +17,7 @@ app = FastAPI(title="RAG App")
 # The engine (embedding model + FAISS index) is loaded once at startup.
 engine: RAGEngine | None = None
 
-ALLOWED_EXT = {".pdf", ".docx", ".doc", ".txt", ".md"}
+ALLOWED_EXT = {".pdf", ".docx", ".doc", ".txt", ".md", ".csv"}
 
 
 @app.on_event("startup")

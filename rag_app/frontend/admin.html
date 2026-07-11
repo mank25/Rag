@@ -17,6 +17,8 @@
   button { padding:11px 20px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; font-size:15px; }
   button:disabled { opacity:.5; cursor:not-allowed; }
   .hidden { display:none; }
+  .logout { margin-left:14px; padding:6px 14px; font-size:13px; background:transparent; color:var(--err); border:1px solid var(--err); font-weight:500; }
+  .logout:hover { background:var(--err); color:#fff; }
   .msg { margin-top:14px; font-size:14px; }
   .ok { color:var(--ok); } .err { color:var(--err); }
   ul { padding-left:18px; color:var(--muted); font-size:14px; line-height:1.7; }
@@ -26,7 +28,10 @@
 <body>
 <header>
   <h1>🔐 Admin Panel</h1>
-  <div><a href="/about">About</a> &nbsp;·&nbsp; <a href="/">← Back to chat</a></div>
+  <div>
+    <a href="/about">About</a> &nbsp;·&nbsp; <a href="/">← Back to chat</a>
+    <button id="logoutBtn" class="logout hidden">Logout</button>
+  </div>
 </header>
 <div class="wrap">
 
@@ -40,8 +45,8 @@
 
   <div class="card hidden" id="ingestCard">
     <h2>Upload &amp; Ingest a Document</h2>
-    <p class="hint">Supported: PDF, DOCX, TXT, MD. The document is chunked, embedded, and added to the vector store.</p>
-    <input type="file" id="file" accept=".pdf,.docx,.doc,.txt,.md" />
+    <p class="hint">Supported: PDF, DOCX, TXT, MD, CSV. The document is chunked, embedded, and added to the vector store.</p>
+    <input type="file" id="file" accept=".pdf,.docx,.doc,.txt,.md,.csv" />
     <button id="uploadBtn">Ingest</button>
     <div class="msg" id="uploadMsg"></div>
   </div>
@@ -80,7 +85,21 @@ function showApp() {
   el('loginCard').classList.add('hidden');
   el('ingestCard').classList.remove('hidden');
   el('sourcesCard').classList.remove('hidden');
+  el('logoutBtn').classList.remove('hidden');
   refreshSources();
+}
+
+function logout() {
+  token = '';
+  sessionStorage.removeItem('adminToken');
+  el('logoutBtn').classList.add('hidden');
+  el('ingestCard').classList.add('hidden');
+  el('sourcesCard').classList.add('hidden');
+  el('loginCard').classList.remove('hidden');
+  el('password').value = '';
+  el('loginMsg').textContent = '';
+  el('uploadMsg').textContent = '';
+  el('password').focus();
 }
 
 async function refreshSources() {
@@ -123,6 +142,7 @@ async function upload() {
 el('loginBtn').addEventListener('click', login);
 el('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
 el('uploadBtn').addEventListener('click', upload);
+el('logoutBtn').addEventListener('click', logout);
 
 if (token) showApp();
 </script>

@@ -98,7 +98,7 @@ Then open:
 ## Usage
 
 1. Open `/admin` and log in with your `ADMIN_PASSWORD`.
-2. Upload a document (PDF, DOCX, DOC, TXT, MD) — it is semantically chunked, embedded locally, and indexed in FAISS and BM25.
+2. Upload a document (PDF, DOCX, DOC, TXT, MD, CSV) — it is semantically chunked (CSV: one chunk per row), embedded locally, and indexed in FAISS and BM25.
 3. Open `/` and ask questions — the full query pipeline runs and the LLM answers with source citations.
 
 ## Configuration
