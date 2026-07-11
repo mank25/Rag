@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin · Document Ingestion</title>
+<style>
+  :root { --bg:#0f1117; --panel:#1a1d27; --accent:#6c8cff; --text:#e6e8ef; --muted:#8b90a3; --ok:#3ecf8e; --err:#ff6b6b; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+  header { padding:14px 20px; background:var(--panel); border-bottom:1px solid #262a38; display:flex; align-items:center; justify-content:space-between; }
+  header h1 { font-size:16px; margin:0; } header a { color:var(--accent); text-decoration:none; font-size:13px; }
+  .wrap { max-width:680px; margin:40px auto; padding:0 20px; }
+  .card { background:var(--panel); border:1px solid #262a38; border-radius:14px; padding:28px; margin-bottom:22px; }
+  h2 { font-size:15px; margin:0 0 16px; }
+  input[type=password], input[type=file] { width:100%; padding:12px; border-radius:10px; border:1px solid #333; background:#12141c; color:var(--text); font-size:15px; margin-bottom:14px; }
+  button { padding:11px 20px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; font-size:15px; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .hidden { display:none; }
+  .msg { margin-top:14px; font-size:14px; }
+  .ok { color:var(--ok); } .err { color:var(--err); }
+  ul { padding-left:18px; color:var(--muted); font-size:14px; line-height:1.7; }
+  .hint { color:var(--muted); font-size:13px; margin-bottom:16px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🔐 Admin Panel</h1>
+  <a href="/">← Back to chat</a>
+</header>
+<div class="wrap">
+
+  <div class="card" id="loginCard">
+    <h2>Admin Login</h2>
+    <p class="hint">Enter the admin password to manage documents.</p>
+    <input type="password" id="password" placeholder="Admin password" />
+    <button id="loginBtn">Login</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <div class="card hidden" id="ingestCard">
+    <h2>Upload &amp; Ingest a Document</h2>
+    <p class="hint">Supported: PDF, DOCX, TXT, MD. The document is chunked, embedded, and added to the vector store.</p>
+    <input type="file" id="file" accept=".pdf,.docx,.doc,.txt,.md" />
+    <button id="uploadBtn">Ingest</button>
+    <div class="msg" id="uploadMsg"></div>
+  </div>
+
+  <div class="card hidden" id="sourcesCard">
+    <h2>Ingested Documents</h2>
+    <ul id="sources"><li>None yet.</li></ul>
+  </div>
+</div>
+
+<script>
+let token = sessionStorage.getItem('adminToken') || '';
+
+const el = (id) => document.getElementById(id);
+
+async function login() {
+  const pw = el('password').value;
+  el('loginMsg').textContent = '';
+  try {
+    const r = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Login failed');
+    token = d.token;
+    sessionStorage.setItem('adminToken', token);
+    showApp();
+  } catch (e) {
+    el('loginMsg').innerHTML = '<span class="err">' + e.message + '</span>';
+  }
+}
+
+function showApp() {
+  el('loginCard').classList.add('hidden');
+  el('ingestCard').classList.remove('hidden');
+  el('sourcesCard').classList.remove('hidden');
+  refreshSources();
+}
+
+async function refreshSources() {
+  try {
+    const r = await fetch('/api/admin/sources', { headers: { 'X-Admin-Password': token } });
+    if (!r.ok) return;
+    const d = await r.json();
+    const ul = el('sources');
+    ul.innerHTML = d.sources.length
+      ? d.sources.map((s) => '<li>' + s + '</li>').join('')
+      : '<li>None yet.</li>';
+  } catch {}
+}
+
+async function upload() {
+  const f = el('file').files[0];
+  if (!f) { el('uploadMsg').innerHTML = '<span class="err">Choose a file first.</span>'; return; }
+  const fd = new FormData();
+  fd.append('file', f);
+  el('uploadBtn').disabled = true;
+  el('uploadMsg').textContent = 'Ingesting… (embedding may take a moment)';
+  try {
+    const r = await fetch('/api/admin/ingest', {
+      method: 'POST',
+      headers: { 'X-Admin-Password': token },
+      body: fd,
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Upload failed');
+    el('uploadMsg').innerHTML = '<span class="ok">✓ ' + d.filename + ' — ' + d.chunks_added + ' chunks added.</span>';
+    el('file').value = '';
+    refreshSources();
+  } catch (e) {
+    el('uploadMsg').innerHTML = '<span class="err">' + e.message + '</span>';
+  } finally {
+    el('uploadBtn').disabled = false;
+  }
+}
+
+el('loginBtn').addEventListener('click', login);
+el('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
+el('uploadBtn').addEventListener('click', upload);
+
+if (token) showApp();
+</script>
+</body>
+</html>
